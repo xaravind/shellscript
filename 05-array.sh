@@ -1,6 +1,6 @@
 #!/bin/abash
 
-MOVIES=["RRR" "FIRE" "WATER"]
+MOVIES=("RRR" "FIRE" "WATER")
 
 
 echo "movie name is :${MOVIES[0]}
