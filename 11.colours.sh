@@ -11,10 +11,10 @@ N="/e/0m"
 VALIDATE () {
   if [ $? -ne 0 ]
    then
-     echo "$2...$R failre $N"
+     echo -e "$2...$R failre $N"
       exit 1
     else
-    echo "$2...$G suceess $N"
+    echo -e  "$2...$G suceess $N"
    fi
 }
 
