@@ -25,4 +25,4 @@ dnf install mysql -y
 VALIDATE $? "INSTALLLING MYSQL"
 
 dnf install git -y
-VALIDATE $? "INSTALLLING MYSQL"
+VALIDATE $? "INSTALLLING GIT"
