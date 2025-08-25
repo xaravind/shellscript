@@ -2,7 +2,7 @@
 
 ---
 
-## Shebang (`#!/bin/bash`)
+### Shebang (`#!/bin/bash`)
 
 * The shebang is the path to the interpreter.
 * Commands inside the shell script are interpreted and executed by the specified shell.
@@ -10,7 +10,7 @@
 
 ---
 
-## Variables
+### Variables
 
 * Any value that repeats in code can be declared as a variable.
 * Declaring variables is a good practice, even if the value is used only once.
@@ -26,7 +26,7 @@
 
 ---
 
-## Special Variables (Example from `07-special-vars.sh`)
+### Special Variables (Example from `07-special-vars.sh`)
 
 * `$@` — All variables passed to the script.
 * `$#` — Number of variables passed.
@@ -41,7 +41,7 @@
 
 ---
 
-## Checking Exit Status and Exiting Script
+### Checking Exit Status and Exiting Script
 
 * Use `$?` to check if the last command succeeded.
 * Exit the script on failure to avoid running next commands.
@@ -57,14 +57,15 @@ fi
 
 ---
 
-## `$EUID` and Running as Root
+### `$EUID` and Running as Root
 
 * `$EUID` is the effective user ID.
 * When a regular user runs `sudo some-command`, `$EUID` becomes 0 (root) for that command, but the real UID remains the same.
 * Auto-elevate script to root if not already root:
 
 ```bash
-if [[ $EUID -ne 0 ]]; then
+if [[ $EUID -ne 0 ]]
+then
     echo "[INFO] Re-running script as root..."
     exec sudo "$0" "$@"
 fi
@@ -72,7 +73,7 @@ fi
 
 ---
 
-## Data Types in Shell
+### Data Types in Shell
 
 * Integer
 * Float / Decimal
@@ -84,7 +85,7 @@ fi
 
 ---
 
-## Arrays
+### Arrays
 
 * Store multiple values.
 * Example:
@@ -102,7 +103,7 @@ fi
 
 ---
 
-## Arithmetic Operations
+### Arithmetic Operations
 
 * Use `expr` or `$(())` for calculations.
 * Examples:
@@ -114,14 +115,14 @@ fi
 
 ---
 
-## Conditions
+### Conditions
 
 * Used to make decisions in scripts.
 * Refer to `08-condition.sh` for examples.
 
 ---
 
-## Functions
+### Functions
 
 * A block of code reused multiple times.
 * Define functions to avoid repetition.
@@ -146,7 +147,7 @@ FUNC_NAME
 
 ---
 
-## Loops
+### Loops
 
 * Example: Loop from 1 to 20
 
@@ -159,7 +160,7 @@ done
 
 ---
 
-## Redirection
+### Redirection
 
 * `>`  — Redirect success output (overwrite)
 * `1>` — Redirect success output (same as `>`)
@@ -177,7 +178,7 @@ echo "hi" &>> output.log      # append both outputs
 
 ---
 
-## Date Command (Timestamp)
+### Date Command (Timestamp)
 
 * Useful to add timestamps to files.
 * Format example:
@@ -194,9 +195,10 @@ touch filename_$(date +%F-%H-%M-%S).sh
 
 ---
 
-## Colors in Shell
+### Colors in Shell
 
 * Use escape sequences to add color in terminal.
+* Use ANSI escape codes:
 * Examples:
 
   * `\e[31m` — Red
@@ -207,5 +209,40 @@ Example:
 ```bash
 echo -e "\e[31m hi \e[32m good morning"
 ```
+---
+
+### **Idempotency**
+
+* A script is **idempotent** if it gives the **same result** no matter how many times you run it.
+* Example: installing a package that’s already installed should not reinstall or break anything.
+* Writing idempotent scripts is good practice for automation.
+
+---
+
+### **Disadvantages of Shell Scripting**
+
+* By default, the shell script **does not stop** if a command fails.
+* It’s the **user's responsibility** to check if each command ran successfully.
+* Use `$?` to get the exit status of the last command.
+
+```bash
+$?  # exit status
+0   # success
+1-127 # failure
+```
+
+---
+
+### **Manual Exit Example**
+
+```bash
+if [[ "$EUID" -ne 0 ]]; then
+    echo "Please run as root"
+    exit 1  # manually exit if condition fails
+fi
+```
+
+* Here, we are **not checking `$?`**, instead we're manually deciding when to stop the script by using `exit 1`.
+
 ---
 
