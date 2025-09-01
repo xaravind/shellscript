@@ -338,67 +338,80 @@ rm optionalfile.txt || true
 ```
 ---
 
-### 📝 Bash Script Note: `trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR`
+### 📝 Bash Script Note:
 
-* **Command**:
-
-  ```bash
-  trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR
-  ```
-
-* **Purpose**:
-  Catches **errors at runtime** and triggers a **custom error handler function** (`handle_error`) when any command **fails (non-zero exit code)**.
+## `trap 'handle_error ${LINENO} "$BASH_COMMAND" "${BASH_LINENO[@]}"' ERR`
 
 ---
 
-### 🔍 Explanation:
+### 📌 Purpose:
 
-* **`trap '...' ERR`**:
-  Triggers the given command or function when any command fails (i.e., returns non-zero exit status).
+* To catch **any command failure** in a script and call a **custom error handler** with:
 
-* **`handle_error`**:
-  A custom function you define to handle or log errors.
-
-* **`$LINENO`**:
-  Refers to the line number **in the current script** where the error occurred.
-
-* **`${BASH_LINENO[@]}`**:
-  An array of line numbers that represent the **call stack**—useful for debugging and tracing errors in nested functions.
+  * The **line number** where the error occurred
+  * The **exact command** that failed
+  * The **call stack** (function call trace)
 
 ---
 
-### ✅ Example:
+### 🧩 Components:
+
+| Part                  | Meaning                                                                               |
+| --------------------- | ------------------------------------------------------------------------------------- |
+| `trap '...' ERR`      | Activates trap on any command with a **non-zero exit status**                         |
+| `${LINENO}`           | Line number where the error occurred                                                  |
+| `"$BASH_COMMAND"`     | The actual command that failed                                                        |
+| `"${BASH_LINENO[@]}"` | Array of line numbers in the **call stack**, useful for tracing nested function calls |
+
+---
+
+### ✅ Example Implementation:
 
 ```bash
 #!/bin/bash
 set -e
-trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR
+trap 'handle_error ${LINENO} "$BASH_COMMAND" "${BASH_LINENO[@]}"' ERR
 
 handle_error() {
-  echo "❌ Error at line: $1"
-  echo "📚 Call stack: ${@:2}"
+  echo "❌ Error on line: $1"
+  echo "💥 Failed command: $2"
+  echo "📚 Call stack (most recent last): ${@:3}"
   exit 1
 }
 
-failing_function() {
-  echo "This will fail..."
-  false  # Simulates a command failure
+test_func() {
+  echo "Inside test_func"
+  false  # This will fail
 }
 
-failing_function
+echo "Starting script..."
+test_func
+echo "This will not be printed."
+```
+
+---
+
+### 🧠 Output Example:
+
+```
+❌ Error on line: 11
+💥 Failed command: false
+📚 Call stack (most recent last): 8 14
 ```
 
 ---
 
 ### ⚠️ Notes:
 
-* `trap ... ERR` works well with `set -e` to gain more control over error reporting.
-* `handle_error` can be enhanced to:
+* Works best when paired with `set -e` to **stop execution on failure**.
+* Great for **debugging complex scripts** with multiple functions or external commands.
+* The `handle_error` function can be extended to:
 
   * Log to a file
   * Send alerts
-  * Dump environment or debug info
-* Be cautious: `trap ERR` also triggers in **subshells** unless configured otherwise.
+  * Clean up resources
+* Trap **will not catch** errors inside `if`, `while`, or `until` condition checks unless explicitly managed.
 
 ---
+
 
