@@ -246,3 +246,159 @@ fi
 
 ---
 
+### 🧾 Calling One Shell Script from Another
+
+Sometimes, we may want to call or run another script **from inside our current script**. There are two main ways to do this, and each behaves differently.
+
+---
+
+### ✅ **1. Using `./<script-name>.sh` (Direct Execution)**
+
+* This runs the other script as a **separate process**.
+* It will have its **own Process ID (PID)**.
+* **Variables** defined in that script will **not be available** in the current script.
+* Useful when the other script is **independent** or performs a separate task.
+
+#### 🔸 Example:
+
+```bash
+#!/bin/bash
+
+echo "This is main script"
+./other-script.sh
+```
+
+---
+
+### ✅ **2. Using `source <script-name>.sh` or `. <script-name>.sh` (Sourcing)**
+
+* This runs the script **in the same shell** as the current script.
+* The **PID remains the same**.
+* Any **variables or functions** defined in the sourced script will be **available** in the current script.
+* Useful when you want to **reuse variables, functions, or configs** from another script.
+
+#### 🔸 Example:
+
+```bash
+#!/bin/bash
+
+source ./config.sh  # Or . ./config.sh
+
+echo "Using variables from config.sh: $APP_NAME"
+```
+
+---
+
+### 🧠 Real-World Use Cases
+
+| Use Case                                   | Method             | Why                 |
+| ------------------------------------------ | ------------------ | ------------------- |
+| Run a full, separate job (e.g., backup.sh) | `./backup.sh`      | Independent process |
+| Load configuration variables               | `source config.sh` | Shares variables    |
+| Share common functions                     | `source utils.sh`  | Reusable code       |
+| Run scripts with no shared state           | `./script.sh`      | Isolated execution  |
+
+---
+
+### 📌 Summary
+
+| Method             | Same PID | Shares Variables | When to Use               |
+| ------------------ | -------- | ---------------- | ------------------------- |
+| `./script.sh`      | ❌        | ❌                | Isolated execution        |
+| `source script.sh` | ✅        | ✅                | Share variables/functions |
+
+---
+
+
+### 📝 Bash Script Note: `set -e`
+
+* **Command**: `set -e`
+* **Purpose**: Causes the script to **exit immediately** if **any command** returns a **non-zero (error) status**.
+* **Usage**: Usually placed **at the top** of a script to enable fail-fast behavior.
+* **Effect**: Helps prevent the script from continuing after an error, which could lead to unintended consequences.
+
+#### ✅ Example:
+
+```bash
+#!/bin/bash
+set -e
+
+echo "Starting..."
+cp somefile.txt /destination/       # If this fails, the script exits immediately
+echo "This line will only run if the above succeeded."
+```
+
+#### ⚠️ Notes:
+
+* It does **not** apply to commands in `if`, `while`, or `until` test conditions.
+* To ignore a command's failure, you can append `|| true` or use error handling logic.
+
+```bash
+rm optionalfile.txt || true
+```
+---
+
+### 📝 Bash Script Note: `trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR`
+
+* **Command**:
+
+  ```bash
+  trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR
+  ```
+
+* **Purpose**:
+  Catches **errors at runtime** and triggers a **custom error handler function** (`handle_error`) when any command **fails (non-zero exit code)**.
+
+---
+
+### 🔍 Explanation:
+
+* **`trap '...' ERR`**:
+  Triggers the given command or function when any command fails (i.e., returns non-zero exit status).
+
+* **`handle_error`**:
+  A custom function you define to handle or log errors.
+
+* **`$LINENO`**:
+  Refers to the line number **in the current script** where the error occurred.
+
+* **`${BASH_LINENO[@]}`**:
+  An array of line numbers that represent the **call stack**—useful for debugging and tracing errors in nested functions.
+
+---
+
+### ✅ Example:
+
+```bash
+#!/bin/bash
+set -e
+trap 'handle_error $LINENO ${BASH_LINENO[@]}' ERR
+
+handle_error() {
+  echo "❌ Error at line: $1"
+  echo "📚 Call stack: ${@:2}"
+  exit 1
+}
+
+failing_function() {
+  echo "This will fail..."
+  false  # Simulates a command failure
+}
+
+failing_function
+```
+
+---
+
+### ⚠️ Notes:
+
+* `trap ... ERR` works well with `set -e` to gain more control over error reporting.
+* `handle_error` can be enhanced to:
+
+  * Log to a file
+  * Send alerts
+  * Dump environment or debug info
+* Be cautious: `trap ERR` also triggers in **subshells** unless configured otherwise.
+
+---
+
